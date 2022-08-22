@@ -84,6 +84,7 @@ n_epochs = 5
 lr = 5e-5
 batch_size = 64
 
+
 def train(train_loader):
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
     model.to(device)
@@ -142,4 +143,6 @@ def test(test_loader, model):
 # %%
 train_loader = get_train_loader(tokenized_dataset, batch_size=8)
 multilingual_model = train(train_loader)
+train_loader = get_train_loader(tokenized_dataset, batch_size=8)
+print(multilingual_model(**next(train_loader.__iter__())))
 multilingual_model.save_pretrained('./finetuned.pt')
