@@ -82,7 +82,7 @@ def get_train_loader(tokenized_dataset, batch_size):
 
 # Define training hyperparameters for the monolingual scenario
 n_epochs = 5
-lr = 5e-5
+lr = 2e-5
 batch_size = 64
 
 
@@ -91,12 +91,12 @@ def train(train_loader):
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
     model.to(device)
 
-    optimizer = AdamW(model.parameters(), lr=lr)
+    optimizer = AdamW(model.parameters(), lr=lr, eps=1e-8)
     n_training_steps = n_epochs * len(train_loader)
     lr_scheduler = get_scheduler(
         "linear",
         optimizer=optimizer,
-        num_warmup_steps=0,
+        num_warmup_steps=n_training_steps / 10,
         num_training_steps=n_training_steps,
     )
 
