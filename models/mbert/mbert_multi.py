@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, DataCollatorWithPadding, AdamW, get_scheduler
 from sklearn.model_selection import train_test_split
@@ -86,6 +87,7 @@ batch_size = 64
 
 
 def train(train_loader):
+    writer = SummaryWriter()
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
     model.to(device)
 
@@ -106,6 +108,13 @@ def train(train_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
             outputs = model(**batch)
             loss = outputs.loss
+            writer.add_scalar('loss/train', loss.item(), progress.n)
+            writer.add_scalar('acc/total', (outputs.logits.argmax(dim=-1) == batch['labels']).sum()
+                              / batch['labels'].size(0), progress.n)
+            writer.add_scalar('acc/neg', (outputs.logits.argmax(dim=-1) == batch['labels'])[batch['labels'] == 0].sum()
+                              / (batch['labels'] == 0).size(0), progress.n)
+            writer.add_scalar('acc/pos', (outputs.logits.argmax(dim=-1) == batch['labels'])[batch['labels'] == 1].sum()
+                              / (batch['labels'] == 1).size(0), progress.n)
             loss.backward()
 
             optimizer.step()
